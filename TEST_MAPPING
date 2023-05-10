@@ -1,0 +1,7 @@
+{
+  "presubmit": [
+    {
+      "name": "libpjc_crypto_test"
+    }
+  ]
+}

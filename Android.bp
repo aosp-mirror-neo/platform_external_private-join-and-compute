@@ -103,6 +103,7 @@ cc_test {
       "libgmock",
       "libpjc_third_party_libabsl",
     ],
+    test_suites: ["general-tests"]
 }
 
 /* This test takes longer than the bazel timeout atest uses, and there

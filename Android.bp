@@ -15,9 +15,23 @@ cc_defaults {
     host_supported: true,
 }
 
+filegroup {
+    name: "private-join-and-compute-proto",
+    srcs: [
+       "**/*.proto",
+    ],
+    visibility: ["//packages/modules/AdServices:__subpackages__"],
+}
+
 cc_library {
     name: "libpjc_crypto",
-    visibility: ["//external/anonymous-counting-tokens:__subpackages__"],
+    min_sdk_version: "30",
+    sdk_version: "current",
+    stl: "libc++_static",
+    visibility: [
+    	"//external/anonymous-counting-tokens:__subpackages__",
+    	"//packages/modules/AdServices/adservices/service-core",
+    ],
     defaults: ["libpjc_defaults"],
     srcs: [
       "private_join_and_compute/crypto/big_num.cc",
@@ -57,7 +71,7 @@ cc_library {
     shared_libs: [
       "libcrypto",
       "liblog",
-      "libprotobuf-cpp-lite",
+      
     ],
     static_libs: [
       "libpjc_third_party_libabsl",
@@ -74,13 +88,19 @@ cc_library {
       integer_overflow: true,
       misc_undefined: ["bounds"],
     },
+    apex_available: ["com.android.adservices", "com.android.extservices",],
     target: {
-        android: {
-            sanitize: {
-                cfi: true,
-            },
+        host: {
+            static_libs: [
+                "libprotobuf-cpp-lite",
+            ]
         },
-    },
+	android: {
+	    static_libs: [
+	        "libprotobuf-cpp-lite-ndk",
+	    ]
+	}
+    }
 }
 
 cc_test {
@@ -97,12 +117,24 @@ cc_test {
       "libcrypto",
       "liblog",
       "libpjc_crypto",
-      "libprotobuf-cpp-lite",
     ],
     static_libs: [
       "libgmock",
       "libpjc_third_party_libabsl",
     ],
+    test_suites: ["general-tests"],
+    target: {
+        host: {
+            static_libs: [
+                "libprotobuf-cpp-lite",
+            ]
+        },
+	android: {
+	    static_libs: [
+	        "libprotobuf-cpp-lite-ndk",
+	    ]
+	}
+    },
 }
 
 /* This test takes longer than the bazel timeout atest uses, and there
@@ -118,22 +150,36 @@ cc_test {
       "libcrypto",
       "liblog",
       "libpjc_crypto",
-      "libprotobuf-cpp-lite",
     ],
     static_libs: [
       "libgmock",
       "libpjc_third_party_libabsl",
     ],
+    target: {
+        host: {
+            static_libs: [
+                "libprotobuf-cpp-lite",
+            ]
+        },
+	android: {
+	    static_libs: [
+	        "libprotobuf-cpp-lite-ndk",
+	    ]
+	}
+    }
 }
 */
 
 cc_library_headers {
     name: "libpjc_third_party_libabsl_headers",
+    min_sdk_version: "30",
+    sdk_version: "current",
     device_supported: true,
     host_supported: true,
     export_include_dirs: [
       "third_party/abseil-cpp-20230125.2/",
     ],
+    apex_available: ["com.android.adservices", "com.android.extservices",],
 }
 
 cc_defaults {
@@ -145,8 +191,14 @@ cc_defaults {
 
 cc_library_static {
     name: "libpjc_third_party_libabsl",
+    min_sdk_version: "30",
+    sdk_version: "current",
     host_supported: true,
-    visibility: ["//external/anonymous-counting-tokens:__subpackages__"],
+    stl: "libc++_static",
+    visibility: [
+        "//external/anonymous-counting-tokens:__subpackages__",
+    	"//packages/modules/AdServices/adservices/service-core",
+    ],
     defaults: ["libpjc_third_party_libabsl_library_defaults"],
     srcs: [
         "third_party/abseil-cpp-20230125.2/absl/base/internal/cycleclock.cc",
@@ -333,6 +385,7 @@ cc_library_static {
         //"third_party/abseil-cpp-20230125.2/absl/time/time_benchmark.cc",
         "third_party/abseil-cpp-20230125.2/absl/time/time.cc",
     ],
+    apex_available: ["com.android.adservices", "com.android.extservices",],
 }
 
 cc_defaults {

@@ -28,8 +28,9 @@
 #include "private_join_and_compute/crypto/ec_point.h"
 #include "private_join_and_compute/crypto/pedersen_over_zn.h"
 #include "private_join_and_compute/crypto/proto/proto_util.h"
-#include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+
+#include "src/google/protobuf/io/coded_stream.h"
+#include "src/google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 namespace private_join_and_compute {
 
@@ -224,18 +225,12 @@ DyVerifiableRandomFunction::GenerateChallengeForGenerateKeysProof(
           challenge_sos.get());
   challenge_cos->SetSerializationDeterministic(true);
   challenge_cos->WriteVarint64(statement.ByteSizeLong());
-  if (!statement.SerializeToCodedStream(challenge_cos.get())) {
-    return absl::InternalError(
-        "DyVerifiableRandomFunction::GenerateChallengeForGenerateKeysProof: "
-        "Failed to serialize statement.");
-  }
-  challenge_cos->WriteVarint64(message_1.ByteSizeLong());
-  if (!message_1.SerializeToCodedStream(challenge_cos.get())) {
-    return absl::InternalError(
-        "DyVerifiableRandomFunction::GenerateChallengeForGenerateKeysProof: "
-        "Failed to serialize message_1.");
-  }
 
+  challenge_cos->WriteString(SerializeAsStringInOrder(statement));
+
+  challenge_cos->WriteVarint64(message_1.ByteSizeLong());
+  challenge_cos->WriteString(SerializeAsStringInOrder(message_1));
+  
   BigNum challenge_bound =
       context_->One().Lshift(parameters_proto_.challenge_length_bits());
 
@@ -552,17 +547,11 @@ StatusOr<BigNum> DyVerifiableRandomFunction::GenerateApplyProofChallenge(
           challenge_sos.get());
   challenge_cos->SetSerializationDeterministic(true);
   challenge_cos->WriteVarint64(statement.ByteSizeLong());
-  if (!statement.SerializeToCodedStream(challenge_cos.get())) {
-    return absl::InternalError(
-        "DyVerifiableRandomFunction::GenerateApplyProofChallenge: Failed to "
-        "serialize statement.");
-  }
+
+  challenge_cos->WriteString(SerializeAsStringInOrder(statement));
+
   challenge_cos->WriteVarint64(message_1.ByteSizeLong());
-  if (!message_1.SerializeToCodedStream(challenge_cos.get())) {
-    return absl::InternalError(
-        "DyVerifiableRandomFunction::GenerateApplyProofChallenge: Failed to "
-        "serialize message_1.");
-  }
+  challenge_cos->WriteString(SerializeAsStringInOrder(message_1));
 
   BigNum challenge_bound =
       context_->One().Lshift(parameters_proto_.challenge_length_bits());

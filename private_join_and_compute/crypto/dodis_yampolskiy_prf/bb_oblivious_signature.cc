@@ -26,6 +26,7 @@
 #include <utility>
 #include <vector>
 
+#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include "absl/strings/str_cat.h"
 #include "private_join_and_compute/crypto/big_num.h"
 #include "private_join_and_compute/crypto/camenisch_shoup.h"
@@ -37,7 +38,6 @@
 #include "private_join_and_compute/crypto/proto/camenisch_shoup.pb.h"
 #include "private_join_and_compute/crypto/proto/ec_point.pb.h"
 #include "private_join_and_compute/crypto/proto/proto_util.h"
-#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 namespace private_join_and_compute {
 
@@ -71,10 +71,9 @@ GenerateHomomorphicCsCiphertexts(
   for (size_t i = 0; i < num_camenisch_shoup_ciphertexts; ++i) {
     size_t batch_start_index =
         i * public_camenisch_shoup->vector_encryption_length();
-    size_t batch_size =
-        std::min(
-            public_camenisch_shoup->vector_encryption_length(),
-            static_cast<uint64_t>(masked_messages.size() - batch_start_index));
+    size_t batch_size = std::min(
+        public_camenisch_shoup->vector_encryption_length(),
+        static_cast<uint64_t>(masked_messages.size() - batch_start_index));
     size_t batch_end_index = batch_start_index + batch_size;
     // Determine the messages for the i'th batch.
     std::vector<BigNum> masked_messages_for_batch_i(
@@ -1513,18 +1512,10 @@ StatusOr<BigNum> BbObliviousSignature::GenerateRequestProofChallenge(
           challenge_sos.get());
   challenge_cos->SetSerializationDeterministic(true);
   challenge_cos->WriteVarint64(proof_statement.ByteSizeLong());
-  if (!proof_statement.SerializeToCodedStream(challenge_cos.get())) {
-    return absl::InternalError(
-        "BbObliviousSignature::GenerateRequestProofChallenge: Failed to "
-        "serialize statement.");
-  }
+  challenge_cos->WriteString(SerializeAsStringInOrder(proof_statement));
 
   challenge_cos->WriteVarint64(proof_message_1.ByteSizeLong());
-  if (!proof_message_1.SerializeToCodedStream(challenge_cos.get())) {
-    return absl::InternalError(
-        "BbObliviousSignature::GenerateRequestProofChallenge: Failed to "
-        "serialize proof_message_1.");
-  }
+  challenge_cos->WriteString(SerializeAsStringInOrder(proof_message_1));
 
   // Delete the CodedOutputStream and StringOutputStream to make sure they are
   // cleaned up before hashing.
@@ -1571,18 +1562,10 @@ StatusOr<BigNum> BbObliviousSignature::GenerateResponseProofChallenge(
           challenge_sos.get());
   challenge_cos->SetSerializationDeterministic(true);
   challenge_cos->WriteVarint64(statement.ByteSizeLong());
-  if (!statement.SerializeToCodedStream(challenge_cos.get())) {
-    return absl::InternalError(
-        "BbObliviousSignature::GenerateResponseProofChallenge: Failed to "
-        "serialize statement.");
-  }
+  challenge_cos->WriteString(SerializeAsStringInOrder(statement));
 
   challenge_cos->WriteVarint64(proof_message_1.ByteSizeLong());
-  if (!proof_message_1.SerializeToCodedStream(challenge_cos.get())) {
-    return absl::InternalError(
-        "BbObliviousSignature::GenerateResponseProofChallenge: Failed to "
-        "serialize proof_message_1.");
-  }
+  challenge_cos->WriteString(SerializeAsStringInOrder(proof_message_1));
 
   // Delete the CodedOutputStream and StringOutputStream to make sure they are
   // cleaned up before hashing.

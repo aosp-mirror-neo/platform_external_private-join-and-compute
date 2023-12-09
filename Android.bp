@@ -68,10 +68,12 @@ cc_library {
       "private_join_and_compute/crypto/",
       ".",
     ],
+    include_dirs: [
+      "external/protobuf",
+    ],
     shared_libs: [
       "libcrypto",
       "liblog",
-      
     ],
     static_libs: [
       "libpjc_third_party_libabsl",
@@ -82,6 +84,9 @@ cc_library {
       export_proto_headers: true,
       local_include_dirs: [
         ".",
+      ],
+      include_dirs: [
+      	"external/protobuf",
       ],
     },
     sanitize: {
@@ -121,6 +126,9 @@ cc_test {
     static_libs: [
       "libgmock",
       "libpjc_third_party_libabsl",
+    ],
+    include_dirs: [
+      "external/protobuf",
     ],
     test_suites: ["general-tests"],
     target: {

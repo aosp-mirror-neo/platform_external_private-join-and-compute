@@ -407,6 +407,7 @@ cc_defaults {
     cflags: [
       "-Wno-unused-parameter",
       "-Wno-unreachable-code-loop-increment",
+      "-Wno-self-move",
     ],
 }
 

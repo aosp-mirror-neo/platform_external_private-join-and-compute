@@ -194,7 +194,6 @@ cc_defaults {
     name: "libpjc_third_party_libabsl_library_defaults",
     header_libs: ["libpjc_third_party_libabsl_headers"],
     export_header_lib_headers: ["libpjc_third_party_libabsl_headers"],
-    cpp_std: "c++17",
 }
 
 cc_library_static {
@@ -408,6 +407,7 @@ cc_defaults {
     cflags: [
       "-Wno-unused-parameter",
       "-Wno-unreachable-code-loop-increment",
+      "-Wno-self-move",
     ],
 }
 

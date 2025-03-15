@@ -24,6 +24,9 @@
 #include <utility>
 #include <vector>
 
+// ANDROID: Not sure how upstream worked without this header
+#include <absl/strings/str_cat.h>
+
 #include "private_join_and_compute/crypto/context.h"
 #include "private_join_and_compute/crypto/ec_group.h"
 #include "private_join_and_compute/crypto/ec_point.h"
